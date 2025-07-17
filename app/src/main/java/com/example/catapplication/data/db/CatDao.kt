@@ -17,6 +17,6 @@ interface CatDao {
     suspend fun delete(cat: CatEntity)
 
     @Query("SELECT * FROM favorites")
-    fun getFavoritesCats() : Flow<List<CatEntity>>
+    fun getFavoritesCats(): Flow<List<CatEntity>>
 
 }

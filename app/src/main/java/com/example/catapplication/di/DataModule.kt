@@ -18,21 +18,19 @@ class DataModule {
 
     @Singleton
     @Provides
-    fun provideDatabase(context: Context) : CatDatabase {
+    fun provideDatabase(context: Context): CatDatabase {
         return Room.databaseBuilder(context, CatDatabase::class.java, "cats_db").build()
     }
 
     @Provides
-    fun provideDao(database: CatDatabase) : CatDao {
+    fun provideDao(database: CatDatabase): CatDao {
         return database.catDao()
     }
 
     @Singleton
     @Provides
-    fun provideRetrofit() : Retrofit {
-        return Retrofit.Builder().
-        baseUrl("https://api.thecatapi.com/").
-        addConverterFactory(
+    fun provideRetrofit(): Retrofit {
+        return Retrofit.Builder().baseUrl("https://api.thecatapi.com/").addConverterFactory(
             GsonConverterFactory.create()
         ).build()
     }
@@ -44,7 +42,7 @@ class DataModule {
     }
 
     @Provides
-    fun provideDataRepository(implementation: DataRepositoryImpl) : DataRepository{
+    fun provideDataRepository(implementation: DataRepositoryImpl): DataRepository {
         return implementation
     }
 }

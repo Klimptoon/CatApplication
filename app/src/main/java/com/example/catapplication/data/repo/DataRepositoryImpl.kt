@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class DataRepositoryImpl @Inject constructor(private val api: CatApi, private val dao: CatDao) : DataRepository {
+class DataRepositoryImpl @Inject constructor(private val api: CatApi, private val dao: CatDao) :
+    DataRepository {
     override suspend fun getCats(): List<CatModel> {
         return api.getCats().map { it.toDomain() }
     }

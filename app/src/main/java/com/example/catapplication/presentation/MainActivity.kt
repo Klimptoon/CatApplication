@@ -24,13 +24,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,26 +76,26 @@ fun AppNavHost(viewModel: MainViewModel) {
             MainScreen(
                 viewModel,
                 onNavigateToFavorites = { navController.navigate("favorites") },
-                onNavigateToDetails = {cat ->
+                onNavigateToDetails = { cat ->
                     val encodedUrl = Uri.encode(cat.url)
-                    navController.navigate("details/${cat.id}/$encodedUrl")}
+                    navController.navigate("details/${cat.id}/$encodedUrl")
+                }
             )
         }
         composable("favorites") {
-            FavoritesScreen(viewModel = viewModel, onBack = {navController.popBackStack()})
+            FavoritesScreen(viewModel = viewModel, onBack = { navController.popBackStack() })
         }
         composable(
             "details/{catId}/{catUrl}",
             arguments = listOf(
-                navArgument("catId") {type = NavType.StringType},
-                navArgument("catUrl") {type = NavType.StringType}
+                navArgument("catId") { type = NavType.StringType },
+                navArgument("catUrl") { type = NavType.StringType }
             )
-            )  {
-            backStackEntry ->
+        ) { backStackEntry ->
             val catId = backStackEntry.arguments?.getString("catId") ?: return@composable
             val catUrl = backStackEntry.arguments?.getString("catUrl") ?: return@composable
 
-            DetailsScreen(catId = catId, catUrl = catUrl, onBack = {navController.popBackStack()})
+            DetailsScreen(catId = catId, catUrl = catUrl, onBack = { navController.popBackStack() })
         }
     }
 }
@@ -132,16 +134,21 @@ fun DetailsScreen(catId: String, catUrl: String, onBack: () -> Unit = {}) {
 }
 
 
-
 @Composable
-fun MainScreen(viewModel: MainViewModel, onNavigateToFavorites : () -> Unit, onNavigateToDetails: (CatModel) -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().padding(WindowInsets.statusBars.asPaddingValues())) {
+fun MainScreen(
+    viewModel: MainViewModel,
+    onNavigateToFavorites: () -> Unit,
+    onNavigateToDetails: (CatModel) -> Unit
+) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(WindowInsets.statusBars.asPaddingValues())) {
 
         Button(onClick = onNavigateToFavorites, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Go to favorites")
         }
 
-        Button(onClick = {viewModel.loadCats()}, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = { viewModel.loadCats() }, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Update list")
         }
 
@@ -158,8 +165,9 @@ fun FavoritesScreen(viewModel: MainViewModel, onBack: () -> Unit = {}) {
     val isEmpty = favorites.isEmpty()
 
     if (isEmpty) {
-        Column(    modifier = Modifier
-            .fillMaxSize(),
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -167,13 +175,15 @@ fun FavoritesScreen(viewModel: MainViewModel, onBack: () -> Unit = {}) {
                 Text(text = "Return to Main", fontSize = 32.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = "Favorites list is empty, return and add cats",fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Favorites list is empty, return and add cats",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
-        }
-    else {
+    } else {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            itemsIndexed(favorites) {
-                    index, item ->
+            itemsIndexed(favorites) { index, item ->
                 CatFavoriteItem(cat = item, viewModel)
             }
         }
@@ -185,16 +195,31 @@ fun FavoritesScreen(viewModel: MainViewModel, onBack: () -> Unit = {}) {
 
 }
 
-
-
 @Composable
 fun CatList(viewModel: MainViewModel, onClick: (CatModel) -> Unit) {
-    val cats by viewModel.cats.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        itemsIndexed(cats) {
-            index, item ->
-            CatItem(cat = item, viewModel, onClick = {onClick(item)})
+    when (state) {
+        is UiState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        is UiState.Success -> {
+            val cats = (state as UiState.Success).data
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                itemsIndexed(cats) { index, item ->
+                    CatItem(cat = item, viewModel = viewModel, onClick = { onClick(item) })
+                }
+            }
+        }
+
+        is UiState.Error -> {
+            val message = (state as UiState.Error).message
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "Ошибка: $message", color = Color.Red)
+            }
         }
     }
 }

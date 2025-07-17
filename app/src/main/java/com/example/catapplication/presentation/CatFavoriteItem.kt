@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -81,7 +80,11 @@ fun CatFavoriteItem(cat: CatModel, viewModel: MainViewModel) {
                     .padding(end = 12.dp)
                     .clickable {
                         viewModel.deleteFromFavorites(catModel = cat)
-                        Toast.makeText(context, "You delete ${cat.id} from favorites", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "You delete ${cat.id} from favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
             )
         }

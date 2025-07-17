@@ -7,8 +7,8 @@ import androidx.room.RoomDatabase
     entities = [CatEntity::class],
     version = 1,
     exportSchema = false
-    )
+)
 
 abstract class CatDatabase : RoomDatabase() {
-    abstract fun catDao() : CatDao
+    abstract fun catDao(): CatDao
 }

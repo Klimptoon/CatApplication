@@ -1,6 +1,5 @@
 package com.example.catapplication.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.catapplication.domain.CatModel
@@ -18,21 +17,22 @@ class MainViewModel(
     private val deleteFromFavoritesUseCase: DeleteFromFavoritesUseCase,
     private val getFavoritesCatsUseCase: GetFavoritesCatsUseCase,
 ) : ViewModel() {
-    private val _cats = MutableStateFlow<List<CatModel>>(emptyList())
-    val cats: StateFlow<List<CatModel>> = _cats
+    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
+    val uiState: StateFlow<UiState> = _uiState
 
     private val _favorite = MutableStateFlow<List<CatModel>>(emptyList())
-    val favorite : StateFlow<List<CatModel>> = _favorite
+    val favorite: StateFlow<List<CatModel>> = _favorite
 
     init {
         viewModelScope.launch {
-            getFavoritesCatsUseCase.invoke().collect {
-                cats -> _favorite.value = cats
+            getFavoritesCatsUseCase.invoke().collect { cats ->
+                _favorite.value = cats
             }
         }
 
         viewModelScope.launch {
-            if (_cats.value.isEmpty()) {
+            val currentState = uiState.value
+            if (currentState !is UiState.Success || currentState.data.isEmpty()) {
                 loadCats()
             }
         }
@@ -52,9 +52,14 @@ class MainViewModel(
 
 
     fun loadCats() {
-        Log.e("MainViewModel", "зашел в котов")
         viewModelScope.launch {
-            _cats.value = getCatsUseCase.invoke()
+            _uiState.value = UiState.Loading
+            try {
+                val cats = getCatsUseCase.invoke() // может быть suspend
+                _uiState.value = UiState.Success(cats)
+            } catch (e: Exception) {
+                _uiState.value = UiState.Error(e.message ?: "Unknown error")
+            }
         }
     }
 }

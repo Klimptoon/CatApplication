@@ -5,7 +5,7 @@ import com.example.catapplication.domain.DataRepository
 import javax.inject.Inject
 
 class GetCatsUseCase @Inject constructor(private val repository: DataRepository) {
-    suspend fun invoke() : List<CatModel> {
+    suspend fun invoke(): List<CatModel> {
         return repository.getCats()
     }
 }

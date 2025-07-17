@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetFavoritesCatsUseCase @Inject constructor(private val repository: DataRepository) {
-    fun invoke() : Flow<List<CatModel>> {
+    fun invoke(): Flow<List<CatModel>> {
         return repository.getFavoritesCats()
     }
 }
